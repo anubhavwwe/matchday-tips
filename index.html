@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matchday Tips – Fixtures</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--tx:#111827;--mu:#6b7280;--ln:#e5e7eb;--ac:#0f9d58;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--card:#171b22;--tx:#f3f4f6;--mu:#9ca3af;--ln:#262c36;--ac:#34d399;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1116;--card:#171b22;--tx:#f3f4f6;--mu:#9ca3af;--ln:#262c36;--ac:#34d399;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);z-index:5;padding:14px 16px 10px;border-bottom:1px solid var(--ln)}
+.wrap{max-width:640px;margin:0 auto}
+.brand{font-weight:800;letter-spacing:-.02em;font-size:18px;margin-bottom:10px}
+.brand span{color:var(--ac)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--ln);background:var(--card);color:var(--tx);font-size:20px;cursor:pointer}
+.nav button:disabled{opacity:.3;cursor:default}
+.ttl{text-align:center}
+.ttl b{display:block;font-size:22px;letter-spacing:-.02em}
+.ttl small{color:var(--mu)}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-top:12px;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;min-width:54px;padding:6px 8px;border-radius:12px;border:1px solid var(--ln);background:var(--card);color:var(--tx);text-align:center;font-size:12px;cursor:pointer}
+.chip b{display:block;font-size:15px}
+.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.chip i{display:block;height:4px;width:4px;border-radius:50%;margin:3px auto 0;background:var(--ac)}
+.chip.on i{background:#fff}.chip i.no{background:transparent}
+main{max-width:640px;margin:0 auto;padding:16px;min-height:60vh}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mu);margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+h2 u{width:10px;height:10px;border-radius:50%}
+.m{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:center;background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.m time{color:var(--mu);font-size:14px;font-variant-numeric:tabular-nums}
+.m div{font-weight:600}.m div span{color:var(--mu);font-weight:400;margin:0 6px}
+.empty{text-align:center;padding:48px 16px;color:var(--mu)}
+.empty b{display:block;color:var(--tx);font-size:18px;margin-bottom:6px}
+.empty button{margin-top:16px;padding:10px 18px;border-radius:999px;border:0;background:var(--ac);color:#fff;font-weight:600;font-size:15px;cursor:pointer}
+footer{max-width:640px;margin:24px auto 0;padding:16px;color:var(--mu);font-size:12px;border-top:1px solid var(--ln)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="brand">Matchday<span>Tips</span></div>
+<div class="nav"><button id="p" aria-label="Previous day">‹</button><div class="ttl"><b id="t"></b><small id="s"></small></div><button id="n" aria-label="Next day">›</button></div>
+<div class="chips" id="c"></div>
+</div></header>
+<main id="m"></main>
+<footer>Times shown in your local time zone (<span id="z"></span>). Fixtures only – tips coming soon. 18+ only. Gamble responsibly; tips are not guaranteed. Check that betting is legal where you live.</footer>
+<script>
+const LG={PL:["Premier League","#7c3aed"],LL:["La Liga","#f97316"],SA:["Serie A","#2563eb"],BL:["Bundesliga","#dc2626"],L1:["Ligue 1","#0891b2"]};
+let M=[];
+function init(){
+const key=d=>d.toLocaleDateString("en-CA");
+const by={};M.forEach(m=>(by[key(m.t)]??=[]).push(m));
+const mid=d=>{const x=new Date(d);x.setHours(0,0,0,0);return x};
+const today=mid(new Date());
+const start=new Date(today);start.setDate(start.getDate()-2);
+const tm=new Date(today);tm.setDate(tm.getDate()+1);let end=M.length?mid(M[M.length-1].t):tm;if(end<tm)end=tm;
+const days=[];for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1))days.push(new Date(d));
+const ti=2;let i=ti;
+const $=id=>document.getElementById(id);
+$("z").textContent=Intl.DateTimeFormat().resolvedOptions().timeZone;
+const wd=(d,o)=>d.toLocaleDateString(undefined,o);
+function nextWith(){for(let j=i+1;j<days.length;j++)if(by[key(days[j])])return j;return -1}
+function render(){
+const d=days[i],r=i-ti,ms=by[key(d)]||[];
+$("t").textContent=r==0?"Today":r==1?"Tomorrow":r==-1?"Yesterday":wd(d,{weekday:"long"});
+$("s").textContent=wd(d,{day:"numeric",month:"long",year:"numeric"});
+$("p").disabled=i==0;$("n").disabled=i==days.length-1;
+$("c").innerHTML=days.map((x,j)=>`<button class="chip${j==i?" on":""}" data-j="${j}">${wd(x,{weekday:"short"})}<b>${x.getDate()}</b><i class="${by[key(x)]?"":"no"}"></i></button>`).join("");
+const on=$("c").querySelector(".on");if(on)$("c").scrollLeft=on.offsetLeft-$("c").clientWidth/2+on.clientWidth/2;
+let h="";
+if(!ms.length){const nj=nextWith();h=`<div class="empty"><b>No matches today</b>Nothing scheduled in the top 5 leagues on this day.${nj>=0?`<br><button data-j="${nj}">Jump to next matchday</button>`:""}</div>`}
+else for(const k in LG){const g=ms.filter(m=>m.l==k);if(!g.length)continue;
+h+=`<h2><u style="background:${LG[k][1]}"></u>${LG[k][0]}</h2>`+g.map(m=>`<div class="m"><time>${m.t.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}</time><div>${m.h}<span>vs</span>${m.w}</div></div>`).join("")}
+$("m").innerHTML=h;
+}
+const go=j=>{if(j>=0&&j<days.length){i=j;render();scrollTo(0,0)}};
+$("p").onclick=()=>go(i-1);$("n").onclick=()=>go(i+1);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-j]");if(b)go(+b.dataset.j)});
+document.addEventListener("keydown",e=>{if(e.key=="ArrowLeft")go(i-1);if(e.key=="ArrowRight")go(i+1)});
+let x0=null;
+$("m").addEventListener("touchstart",e=>x0=e.touches[0].clientX,{passive:true});
+$("m").addEventListener("touchend",e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(Math.abs(dx)>60)go(i+(dx<0?1:-1))});
+render();
+}
+fetch("/api/fixtures").then(r=>{if(!r.ok)throw 0;return r.json()}).then(a=>{M=a.map(m=>({...m,t:new Date(m.t)})).sort((x,y)=>x.t-y.t);init()}).catch(()=>{document.getElementById("m").innerHTML='<div class="empty"><b>Fixtures unavailable</b>Please try again shortly.</div>'});
+</script>
+</body>
+</html>
